@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Qoutok - Ultimate</title>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RETNEQJCKB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-RETNEQJCKB');
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Styles (نفس التصميم السابق) */
+        :root { --bg: #000000; --card: #121212; --primary: #25f4ee; --accent: #fe2c55; --text: #ffffff; --text-muted: #888888; --border: #333333; --glass: rgba(20, 20, 20, 0.95); --nav-height: 70px; }
+        body.light-mode { --bg: #f2f2f2; --card: #ffffff; --primary: #007bff; --accent: #ff4757; --text: #1a1a1a; --text-muted: #666; --border: #ddd; --glass: rgba(255, 255, 255, 0.95); }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: 'Tajawal', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+        .app-view { flex: 1; position: relative; overflow: hidden; display: none; }
+        .app-view.active { display: block; }
+        .feed-scroll { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; padding-top: 60px; }
+        .feed-scroll::-webkit-scrollbar { display: none; }
+        .quote-slide { height: 100%; width: 100%; scroll-snap-align: start; position: relative; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border); background: radial-gradient(circle at center, var(--card), var(--bg)); }
+        .quote-body { width: 85%; text-align: center; z-index: 2; padding-bottom: 60px; transform: translateY(-20px); }
+        .quote-text { font-size: 2rem; line-height: 1.6; margin-bottom: 15px; font-family: 'Amiri'; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .actions-bar { position: absolute; left: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; z-index: 10; align-items: center; }
+        .action-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--glass); display: flex; justify-content: center; align-items: center; color: var(--text); font-size: 1.2rem; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .action-btn:active { transform: scale(0.9); }
+        .action-btn.liked { color: var(--accent); border-color: var(--accent); animation: pop 0.3s ease; }
+        .count-label { font-size: 0.7rem; font-weight: bold; margin-top: -10px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 10px; }
+        .qotd-banner { margin: 10px 20px; background: linear-gradient(45deg, #25f4ee, #fe2c55); padding: 20px; border-radius: 15px; color: white; text-align: center; box-shadow: 0 5px 20px rgba(254, 44, 85, 0.3); position: relative; overflow: hidden; }
+        .qotd-label { position: absolute; top: 5px; right: 10px; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 10px; }
+        .mood-bar { display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px; scrollbar-width: none; }
+        .mood-chip { background: var(--card); border: 1px solid var(--border); padding: 8px 15px; border-radius: 20px; white-space: nowrap; font-size: 0.9rem; cursor: pointer; transition: 0.3s; }
+        .mood-chip.active { background: var(--primary); color: black; border-color: var(--primary); font-weight: bold; }
+        .dev-card { text-align: center; padding: 30px 20px; background: var(--card); border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .dev-logo { width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, #000, #333); margin: 0 auto 15px; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--primary); border: 2px solid var(--primary); }
+        .contact-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border-radius: 10px; margin-top: 10px; cursor: pointer; font-weight: bold; text-decoration: none; transition: 0.2s;}
+        .contact-btn:active { transform: scale(0.95); opacity: 0.8; }
+        .whatsapp { background: #25D366; color: white; }
+        .email { background: #555; color: white; }
+        .feed-header { position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 20; display: flex; justify-content: space-between; padding: 0 20px; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); pointer-events: none; }
+        .header-logo { font-family: 'Reem Kufi'; font-weight: bold; font-size: 1.4rem; color: var(--text); pointer-events: all; text-shadow: 0 2px 5px black; }
+        .nav-bar { height: var(--nav-height); background: var(--glass); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); position: absolute; bottom: 0; width: 100%; z-index: 100; }
+        .nav-item { color: var(--text-muted); font-size: 1.4rem; padding: 10px; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        .add-btn-nav { background: var(--primary); color: #000; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin-bottom: 25px; box-shadow: 0 0 15px rgba(37, 244, 238, 0.5); }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; transform: translateY(100%); transition: 0.4s; padding: 20px; display: flex; flex-direction: column; }
+        .modal.open { transform: translateY(0); }
+        .input-field { width: 100%; background: var(--card); border: 1px solid var(--border); padding: 15px; color: var(--text); border-radius: 10px; margin-bottom: 15px; font-family: 'Tajawal'; }
+        .btn-primary { background: var(--primary); color: black; padding: 15px; border: none; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #fff; color: #000; padding: 10px 20px; border-radius: 30px; z-index: 300; transition: 0.4s; font-weight: bold; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+        .phone-input-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .country-code { width: 80px; background: var(--card); border: 1px solid var(--border); color: var(--primary); padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; }
+        #capture-area { position: fixed; top: -9999px; width: 1080px; height: 1920px; background: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px; }
+        
+        /* Admin Notification Modal */
+        .admin-notify {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            width: 90%; max-width: 400px; background: var(--card); border: 1px solid var(--primary);
+            border-radius: 15px; padding: 20px; z-index: 9999; transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+        }
+        .admin-notify.show { transform: translateX(-50%) translateY(0); }
+        .notify-icon { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">تم</div>
+
+    <div id="admin-popup" class="admin-notify">
+        <div class="notify-icon"><i class="fas fa-bell"></i></div>
+        <h3 id="notify-title">إعلان هام</h3>
+        <p id="notify-body" style="color:var(--text-muted); margin:10px 0;">محتوى الرسالة هنا...</p>
+        <button class="btn-primary" onclick="document.getElementById('admin-popup').classList.remove('show')">حسناً</button>
+    </div>
+
+    <div id="view-home" class="app-view active">
+        <div class="feed-header">
+            <div class="header-logo" onclick="App.refreshHome()">Qoutok</div>
+            <div style="pointer-events: all; display:flex; gap:15px; font-size:0.9rem; font-weight:bold;">
+                <span onclick="App.setFeedMode('all')" id="tab-all" style="color:var(--text); border-bottom:2px solid var(--primary);">الكل</span>
+                <span onclick="App.setFeedMode('qotd')" id="tab-qotd" style="color:var(--text-muted);">المميز</span>
+            </div>
+        </div>
+        <div class="feed-scroll" id="feed-container">
+            <div id="qotd-area" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div id="view-explore" class="app-view" style="padding: 20px; overflow-y: auto; padding-bottom: 80px;">
+        <h2 style="margin: 20px 0; text-align: center;">اكتشف الترند 🔥</h2>
+        <input type="text" class="input-field" placeholder="بحث عن هاشتاغ أو كلمات..." onkeyup="App.search(this.value)">
+        <div class="mood-bar">
+            <div class="mood-chip active" onclick="App.filterMood('all', this)">الكل</div>
+            <div class="mood-chip" onclick="App.filterMood('سعيد', this)">😊 سعيد</div>
+            <div class="mood-chip" onclick="App.filterMood('حزين', this)">🥀 حزين</div>
+            <div class="mood-chip" onclick="App.filterMood('تحفيز', this)">💪 تحفيز</div>
+            <div class="mood-chip" onclick="App.filterMood('حب', this)">❤️ حب</div>
+            <div class="mood-chip" onclick="App.filterMood('حكم', this)">🦉 حكم</div>
+        </div>
+        <div id="search-results" style="margin-top: 20px;"></div>
+    </div>
+
+    <div id="view-settings" class="app-view" style="padding: 20px; overflow-y: auto;">
+        <h2 style="margin: 20px 0; text-align: center;">الإعدادات والمطور</h2>
+        
+        <div style="background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px;">
+            <h4 style="margin-bottom: 10px;">رقم هاتفك (للتواصل)</h4>
+            <div class="phone-input-container">
+                <input type="text" id="user-country-code" class="country-code" placeholder="+962" readonly>
+                <input type="number" id="user-phone" class="input-field" style="margin-bottom:0;" placeholder="رقم الهاتف">
+            </div>
+            <button class="btn-primary" style="font-size: 0.9rem; padding: 10px;" onclick="App.saveUserPhone()">حفظ رقمي</button>
+        </div>
+
+        <div class="dev-card">
+            <div class="dev-logo">Q</div>
+            <h3>Qoutok App</h3>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:15px;">الإصدار 8.0 - Admin Connected</p>
+            <p style="margin-bottom:5px;">تم التطوير بواسطة</p>
+            <h4 style="color:var(--primary); margin-bottom:20px;">Ahmad amer alkafween DEV</h4>
+            
+            <a href="https://wa.me/962000000000?text=مرحبا، لدي اقتراح بخصوص تطبيق Qoutok" target="_blank" class="contact-btn whatsapp">
+                <i class="fab fa-whatsapp"></i> إرسال عبر واتساب
+            </a>
+            
+            <div class="contact-btn email" onclick="App.toggleModal('modal-contact', true)">
+                <i class="fas fa-envelope"></i> مراسلة المطور (بريد)
+            </div>
+        </div>
+
+        <div class="input-field" style="display: flex; justify-content: space-between;">
+            <span>الوضع الليلي</span>
+            <input type="checkbox" id="theme-toggle" checked onchange="App.toggleTheme(this.checked)">
+        </div>
+        
+        <div class="input-field" style="color: #ef4444; text-align: center;" onclick="DB.clear()">
+            <i class="fas fa-trash"></i> مسح البيانات المحلية
+        </div>
+    </div>
+
+    <div id="view-library" class="app-view" style="padding: 20px; overflow-y: auto;">
+        <h2 style="margin: 20px 0; text-align: center;">محفوظاتي</h2>
+        <div id="likes-feed"></div>
+    </div>
+
+    <div id="modal-add" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h3>نشر جديد</h3>
+            <i class="fas fa-times" style="font-size:1.5rem;" onclick="App.toggleModal('modal-add', false)"></i>
+        </div>
+        <textarea id="inp-text" class="input-field" rows="4" placeholder="اكتب الاقتباس..."></textarea>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="inp-author" class="input-field" placeholder="القائل">
+            <input type="text" id="inp-book" class="input-field" placeholder="المصدر/الكتاب">
+        </div>
+        <input type="text" id="inp-cat" class="input-field" placeholder="التصنيف (مثال: تحفيز, حب)">
+        <button class="btn-primary" onclick="App.publish()">نشر للعالم 🌍</button>
+    </div>
+
+    <div id="modal-contact" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h3>تواصل مع المطور</h3>
+            <i class="fas fa-times" style="font-size:1.5rem;" onclick="App.toggleModal('modal-contact', false)"></i>
+        </div>
+        <p style="color:var(--text-muted); margin-bottom:15px;">أرسل اقتراحك أو مشكلتك وسيتم الرد عليك قريباً.</p>
+        <input type="email" id="contact-email" class="input-field" placeholder="بريدك الإلكتروني (لأرد عليك)">
+        <textarea id="contact-msg" class="input-field" rows="5" placeholder="اكتب رسالتك هنا..."></textarea>
+        <button class="btn-primary" onclick="App.sendEmail()">إرسال الرسالة 🚀</button>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="App.nav('home', this)"><i class="fas fa-home"></i></div>
+        <div class="nav-item" onclick="App.nav('explore', this)"><i class="fas fa-fire"></i></div>
+        <div class="add-btn-nav" onclick="App.toggleModal('modal-add', true)"><i class="fas fa-plus"></i></div>
+        <div class="nav-item" onclick="App.nav('library', this)"><i class="fas fa-heart"></i></div>
+        <div class="nav-item" onclick="App.nav('settings', this)"><i class="fas fa-user-cog"></i></div>
+    </div>
+
+    <div id="capture-area">
+        <h1 id="cap-text" style="color:var(--primary); font-size:60px; margin-bottom:30px;"></h1>
+        <h3 id="cap-author" style="color:#fff; font-size:30px;"></h3>
+        <div class="watermark" style="position:absolute; bottom:40px; right:40px; color:#555; font-size:20px;">Qoutok App</div>
+    </div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyAfz9k1oG3rwiv4Lsfy7Dl92PxuzsrYqB8",
+    authDomain: "qoutok.firebaseapp.com",
+    projectId: "qoutok",
+    storageBucket: "qoutok.firebasestorage.app",
+    messagingSenderId: "580116525824",
+    appId: "1:580116525824:web:d855472417f0682f2c39e5",
+    measurementId: "G-RETNEQJCKB"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const analytics = firebase.analytics();
+
+const DB = {
+    data: { posts: [], likes: [], reports: [] },
+    async init() {
+        const local = localStorage.getItem('qoutok_data');
+        if(local) {
+            const p = JSON.parse(local);
+            this.data.likes = p.likes || [];
+            this.data.reports = p.reports || [];
+        }
+        await this.fetchPosts();
+        this.listenForAnnouncements(); // بدء الاستماع لإشعارات الأدمن
+    },
+    async fetchPosts() {
+        db.ref('posts').limitToLast(100).on('value', (snapshot) => {
+            const val = snapshot.val();
+            if(val) {
+                this.data.posts = Object.entries(val).map(([k, v]) => ({ id: k, ...v })).reverse();
+                App.renderFeed();
+            }
+        });
+    },
+    
+    // ✨ جديد: الاستماع لإشعارات الأدمن ✨
+    listenForAnnouncements() {
+        db.ref('announcements').limitToLast(1).on('child_added', (snapshot) => {
+            const msg = snapshot.val();
+            // التأكد أن الإشعار جديد (بناءً على الوقت) - اختياري بسيط هنا
+            if(msg && (Date.now() - msg.date) < 86400000) { // إذا كان الإشعار في آخر 24 ساعة
+                 App.showAdminNotification(msg.title, msg.body);
+            }
+        });
+    },
+
+    saveLocal() { localStorage.setItem('qoutok_data', JSON.stringify({ likes: this.data.likes, reports: this.data.reports })); },
+    async addPost(post) { try { await db.ref('posts').push(post); analytics.logEvent('publish', { cat: post.cat }); return true; } catch(e) { return false; } },
+    async interact(id, type, val) {
+        const ref = db.ref(`posts/${id}/${type}Count`);
+        ref.transaction((current) => { const n = (current || 0) + val; return n < 0 ? 0 : n; });
+    },
+    clear() { localStorage.removeItem('qoutok_data'); location.reload(); }
+};
+
+const App = {
+    feedMode: 'all',
+    activeMood: 'all',
+    
+    async init() {
+        await DB.init();
+        App.checkTheme();
+        App.renderQOTD();
+        App.renderFeed();
+        App.autoDetectCountry();
+        const savedPhone = localStorage.getItem('user_phone');
+        if(savedPhone) document.getElementById('user-phone').value = savedPhone;
+        
+        // تحميل الإيميل المحفوظ
+        const savedEmail = localStorage.getItem('user_email');
+        if(savedEmail) document.getElementById('contact-email').value = savedEmail;
+    },
+    
+    showAdminNotification(title, body) {
+        document.getElementById('notify-title').innerText = title;
+        document.getElementById('notify-body').innerText = body;
+        document.getElementById('admin-popup').classList.add('show');
+    },
+
+    autoDetectCountry() {
+        fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(data => { if(data.country_calling_code) document.getElementById('user-country-code').value = data.country_calling_code; })
+            .catch(() => { document.getElementById('user-country-code').value = "+962"; });
+    },
+
+    saveUserPhone() {
+        const num = document.getElementById('user-phone').value;
+        if(num) { localStorage.setItem('user_phone', num); App.showToast("تم حفظ رقمك ✅"); }
+    },
+
+    async sendEmail() {
+        const email = document.getElementById('contact-email').value;
+        const msg = document.getElementById('contact-msg').value;
+        if(!email || !msg) return App.showToast("الرجاء تعبئة الحقول");
+        
+        // حفظ الإيميل للمرة القادمة
+        localStorage.setItem('user_email', email);
+
+        App.showToast("جاري إرسال الرسالة... ⏳");
+        try {
+            await fetch("https://formsubmit.co/ajax/ahmadakf78@gmail.com", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ email: email, message: msg, _subject: "رسالة Qoutok" })
+            });
+            App.showToast("تم الإرسال بنجاح! ✅");
+            document.getElementById('contact-msg').value = '';
+            App.toggleModal('modal-contact', false);
+        } catch (error) { App.showToast("حدث خطأ في الإرسال ❌"); }
+    },
+
+    nav(view, el) {
+        const currentView = document.querySelector('.app-view.active').id;
+        if(view === 'home' && currentView === 'view-home') { App.refreshHome(); return; }
+        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-'+view).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(el) el.classList.add('active');
+        if(view === 'explore') App.renderExplore();
+        if(view === 'library') App.renderLikes();
+    },
+
+    refreshHome() {
+        const container = document.getElementById('feed-container');
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+        App.showToast("جاري التحديث... 🔄");
+        setTimeout(() => { App.renderFeed(); }, 500); 
+    },
+
+    renderFeed() {
+        const c = document.getElementById('feed-container');
+        c.innerHTML = '';
+        let posts = DB.data.posts.filter(p => !DB.data.reports.includes(p.id));
+        if(this.feedMode === 'qotd') { c.innerHTML = document.getElementById('qotd-area').innerHTML; return; }
+        posts.forEach(p => {
+            const isLiked = DB.data.likes.includes(p.id) ? 'liked' : '';
+            const likes = p.likesCount || 0;
+            const shares = p.sharesCount || 0;
+            const time = App.timeAgo(p.date);
+            const html = `
+                <div class="quote-slide" id="post-${p.id}">
+                    <div class="quote-body">
+                        <div style="color:var(--primary); margin-bottom:10px; font-size:0.9rem;">#${p.cat}</div>
+                        <div class="quote-text">"${p.text}"</div>
+                        <div style="color:var(--text-muted); font-size:0.9rem;">
+                            <span>— ${p.author}</span> <br> <small style="opacity:0.7">${time}</small>
+                        </div>
+                    </div>
+                    <div class="actions-bar">
+                        <div class="action-btn ${isLiked}" onclick="App.like('${p.id}', this)"><i class="fas fa-heart"></i></div>
+                        <span class="count-label">${likes}</span>
+                        <div class="action-btn" onclick="App.copyText('${p.text}')"><i class="fas fa-copy"></i></div>
+                        <div class="action-btn" onclick="App.share('${p.id}')"><i class="fas fa-share-alt"></i></div>
+                        <span class="count-label">${shares}</span>
+                        <div class="action-btn" style="border-color:#ef4444; color:#ef4444;" onclick="App.report('${p.id}')"><i class="fas fa-flag"></i></div>
+                    </div>
+                </div>`;
+            c.innerHTML += html;
+        });
+    },
+
+    renderExplore() {
+        const c = document.getElementById('search-results');
+        c.innerHTML = '';
+        let posts = [...DB.data.posts].sort((a, b) => ((a.likesCount||0)+(a.sharesCount||0)) - ((b.likesCount||0)+(b.sharesCount||0))).reverse();
+        if(this.activeMood !== 'all') posts = posts.filter(p => p.cat.includes(this.activeMood) || p.text.includes(this.activeMood));
+        posts.forEach(p => {
+            c.innerHTML += `
+                <div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);">
+                    <div style="font-weight:bold; margin-bottom:5px;">${p.text}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                        <span>#${p.cat}</span> <span>🔥 ${(p.likesCount||0) + (p.sharesCount||0)} تفاعل</span>
+                    </div>
+                </div>`;
+        });
+    },
+
+    async publish() {
+        const txt = document.getElementById('inp-text').value;
+        const auth = document.getElementById('inp-author').value || "مجهول";
+        const cat = document.getElementById('inp-cat').value || "عام";
+        if(!txt) return;
+        App.showToast("جاري النشر...");
+        await DB.addPost({ text: txt, author: auth, cat: cat, date: Date.now(), likesCount: 0, sharesCount: 0 });
+        document.getElementById('inp-text').value = '';
+        App.toggleModal('modal-add', false);
+        App.showToast("تم النشر! 🚀");
+        App.refreshHome();
+    },
+
+    like(id, btn) {
+        let label = btn.nextElementSibling;
+        let currentCount = parseInt(label.innerText) || 0;
+        if(!DB.data.likes.includes(id)) {
+            DB.data.likes.push(id); btn.classList.add('liked');
+            label.innerText = currentCount + 1; DB.interact(id, 'likes', 1);
+        } else {
+            DB.data.likes = DB.data.likes.filter(i => i !== id); btn.classList.remove('liked');
+            label.innerText = Math.max(0, currentCount - 1); DB.interact(id, 'likes', -1);
+        }
+        DB.saveLocal();
+    },
+
+    share(id) {
+        DB.interact(id, 'shares', 1);
+        const p = DB.data.posts.find(x => x.id == id);
+        const area = document.getElementById('capture-area');
+        document.getElementById('cap-text').innerText = p.text;
+        document.getElementById('cap-author').innerText = p.author;
+        App.showToast("جاري إنشاء الصورة للمشاركة...");
+        html2canvas(area).then(c => {
+            const l = document.createElement('a'); l.download = `Qoutok-${id}.png`; l.href = c.toDataURL(); l.click();
+        });
+    },
+
+    report(id) {
+        if(confirm("هل تريد الإبلاغ عن هذا المنشور وإخفاءه؟")) {
+            DB.data.reports.push(id); DB.saveLocal(); document.getElementById('post-'+id).style.display = 'none'; App.showToast("تم الإبلاغ شكراً لك");
+        }
+    },
+
+    renderQOTD() {
+        if(DB.data.posts.length === 0) return;
+        const today = new Date().toDateString();
+        let hash = 0; for(let i=0; i<today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash);
+        const index = Math.abs(hash) % DB.data.posts.length; const q = DB.data.posts[index];
+        const html = `<div style="padding:20px; display:flex; justify-content:center; align-items:center; height:100%;"><div class="qotd-banner"><div class="qotd-label">اقتباس اليوم 🌟</div><h2 style="font-family:'Amiri'; margin:20px 0;">"${q.text}"</h2><p>${q.author}</p></div></div>`;
+        document.getElementById('qotd-area').innerHTML = html;
+    },
+
+    renderLikes() {
+        const c = document.getElementById('likes-feed');
+        c.innerHTML = '';
+        const liked = DB.data.posts.filter(p => DB.data.likes.includes(p.id));
+        if(liked.length === 0) c.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);">لم تعجب بأي شيء بعد</div>';
+        liked.forEach(p => {
+            c.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);"><div style="font-size:1.2rem; margin-bottom:5px;">"${p.text}"</div><small style="color:var(--text-muted);">${p.author}</small></div>`;
+        });
+    },
+
+    timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        if(seconds < 60) return "الآن";
+        const m = Math.floor(seconds/60); if(m<60) return `منذ ${m} د`;
+        const h = Math.floor(m/60); if(h<24) return `منذ ${h} س`;
+        return Math.floor(h/24) + " يوم";
+    },
+    filterMood(mood, el) { this.activeMood = mood; document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); App.renderExplore(); },
+    search(val) { const c = document.getElementById('search-results'); c.innerHTML = ''; const res = DB.data.posts.filter(p => p.text.includes(val) || p.cat.includes(val)); res.forEach(p => { c.innerHTML += `<div style="background:var(--card); padding:15px; margin-bottom:10px;">${p.text}</div>`; }); },
+    copyText(txt) { navigator.clipboard.writeText(txt); App.showToast("تم النسخ"); },
+    toggleModal(id, show) { document.getElementById(id).classList.toggle('open', show); },
+    showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); },
+    checkTheme() { if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode'); },
+    toggleTheme(chk) { if(!chk) { document.body.classList.add('light-mode'); localStorage.setItem('theme', 'light'); } else { document.body.classList.remove('light-mode'); localStorage.setItem('theme', 'dark'); } },
+    setFeedMode(mode) { this.feedMode = mode; document.getElementById('tab-all').style.borderBottom = mode==='all' ? '2px solid var(--primary)' : 'none'; document.getElementById('tab-qotd').style.borderBottom = mode==='qotd' ? '2px solid var(--primary)' : 'none'; App.renderFeed(); }
+};
+
+window.onload = () => App.init();
+</script>
+</body>
+</html>
