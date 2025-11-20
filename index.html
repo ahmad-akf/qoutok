@@ -3,26 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Qoutok - Ultimate</title>
+    <title>Qoutok - Safe & Connected</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RETNEQJCKB"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-RETNEQJCKB');
-    </script>
-
+    <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-RETNEQJCKB');</script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Styles (نفس التصميم السابق) */
+        /* (نفس الستايل السابق مع إضافة بسيطة لصندوق الردود) */
         :root { --bg: #000000; --card: #121212; --primary: #25f4ee; --accent: #fe2c55; --text: #ffffff; --text-muted: #888888; --border: #333333; --glass: rgba(20, 20, 20, 0.95); --nav-height: 70px; }
         body.light-mode { --bg: #f2f2f2; --card: #ffffff; --primary: #007bff; --accent: #ff4757; --text: #1a1a1a; --text-muted: #666; --border: #ddd; --glass: rgba(255, 255, 255, 0.95); }
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -66,16 +59,12 @@
         .phone-input-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .country-code { width: 80px; background: var(--card); border: 1px solid var(--border); color: var(--primary); padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; }
         #capture-area { position: fixed; top: -9999px; width: 1080px; height: 1920px; background: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px; }
-        
-        /* Admin Notification Modal */
-        .admin-notify {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
-            width: 90%; max-width: 400px; background: var(--card); border: 1px solid var(--primary);
-            border-radius: 15px; padding: 20px; z-index: 9999; transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
-        }
+        .admin-notify { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); width: 90%; max-width: 400px; background: var(--card); border: 1px solid var(--primary); border-radius: 15px; padding: 20px; z-index: 9999; transition: 0.5s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
         .admin-notify.show { transform: translateX(-50%) translateY(0); }
-        .notify-icon { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        
+        /* Replies Section */
+        .reply-box { background: rgba(37, 244, 238, 0.1); border: 1px solid var(--primary); border-radius: 10px; padding: 15px; margin-bottom: 10px; }
+        .reply-date { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -83,9 +72,9 @@
     <div id="toast" class="toast">تم</div>
 
     <div id="admin-popup" class="admin-notify">
-        <div class="notify-icon"><i class="fas fa-bell"></i></div>
-        <h3 id="notify-title">إعلان هام</h3>
-        <p id="notify-body" style="color:var(--text-muted); margin:10px 0;">محتوى الرسالة هنا...</p>
+        <div class="notify-icon" style="font-size:2rem; margin-bottom:10px;"><i class="fas fa-bell"></i></div>
+        <h3 id="notify-title"></h3>
+        <p id="notify-body" style="color:var(--text-muted); margin:10px 0;"></p>
         <button class="btn-primary" onclick="document.getElementById('admin-popup').classList.remove('show')">حسناً</button>
     </div>
 
@@ -104,7 +93,7 @@
 
     <div id="view-explore" class="app-view" style="padding: 20px; overflow-y: auto; padding-bottom: 80px;">
         <h2 style="margin: 20px 0; text-align: center;">اكتشف الترند 🔥</h2>
-        <input type="text" class="input-field" placeholder="بحث عن هاشتاغ أو كلمات..." onkeyup="App.search(this.value)">
+        <input type="text" class="input-field" placeholder="بحث..." onkeyup="App.search(this.value)">
         <div class="mood-bar">
             <div class="mood-chip active" onclick="App.filterMood('all', this)">الكل</div>
             <div class="mood-chip" onclick="App.filterMood('سعيد', this)">😊 سعيد</div>
@@ -119,6 +108,10 @@
     <div id="view-settings" class="app-view" style="padding: 20px; overflow-y: auto;">
         <h2 style="margin: 20px 0; text-align: center;">الإعدادات والمطور</h2>
         
+        <button class="btn-primary" style="margin-bottom: 20px; background: #10b981;" onclick="App.openReplies()">
+            <i class="fas fa-inbox"></i> صندوق الردود
+        </button>
+
         <div style="background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px;">
             <h4 style="margin-bottom: 10px;">رقم هاتفك (للتواصل)</h4>
             <div class="phone-input-container">
@@ -131,27 +124,18 @@
         <div class="dev-card">
             <div class="dev-logo">Q</div>
             <h3>Qoutok App</h3>
-            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:15px;">الإصدار 8.0 - Admin Connected</p>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:15px;">الإصدار 9.0 - Secured</p>
             <p style="margin-bottom:5px;">تم التطوير بواسطة</p>
             <h4 style="color:var(--primary); margin-bottom:20px;">Ahmad amer alkafween DEV</h4>
-            
-            <a href="https://wa.me/962000000000?text=مرحبا، لدي اقتراح بخصوص تطبيق Qoutok" target="_blank" class="contact-btn whatsapp">
-                <i class="fab fa-whatsapp"></i> إرسال عبر واتساب
-            </a>
-            
-            <div class="contact-btn email" onclick="App.toggleModal('modal-contact', true)">
-                <i class="fas fa-envelope"></i> مراسلة المطور (بريد)
-            </div>
+            <a href="https://wa.me/962000000000" target="_blank" class="contact-btn whatsapp"><i class="fab fa-whatsapp"></i> واتساب</a>
+            <div class="contact-btn email" onclick="App.toggleModal('modal-contact', true)"><i class="fas fa-envelope"></i> رسالة خاصة</div>
         </div>
 
         <div class="input-field" style="display: flex; justify-content: space-between;">
             <span>الوضع الليلي</span>
             <input type="checkbox" id="theme-toggle" checked onchange="App.toggleTheme(this.checked)">
         </div>
-        
-        <div class="input-field" style="color: #ef4444; text-align: center;" onclick="DB.clear()">
-            <i class="fas fa-trash"></i> مسح البيانات المحلية
-        </div>
+        <div class="input-field" style="color: #ef4444; text-align: center;" onclick="DB.clear()"><i class="fas fa-trash"></i> مسح البيانات</div>
     </div>
 
     <div id="view-library" class="app-view" style="padding: 20px; overflow-y: auto;">
@@ -169,7 +153,7 @@
             <input type="text" id="inp-author" class="input-field" placeholder="القائل">
             <input type="text" id="inp-book" class="input-field" placeholder="المصدر/الكتاب">
         </div>
-        <input type="text" id="inp-cat" class="input-field" placeholder="التصنيف (مثال: تحفيز, حب)">
+        <input type="text" id="inp-cat" class="input-field" placeholder="التصنيف (مثال: تحفيز)">
         <button class="btn-primary" onclick="App.publish()">نشر للعالم 🌍</button>
     </div>
 
@@ -178,10 +162,19 @@
             <h3>تواصل مع المطور</h3>
             <i class="fas fa-times" style="font-size:1.5rem;" onclick="App.toggleModal('modal-contact', false)"></i>
         </div>
-        <p style="color:var(--text-muted); margin-bottom:15px;">أرسل اقتراحك أو مشكلتك وسيتم الرد عليك قريباً.</p>
         <input type="email" id="contact-email" class="input-field" placeholder="بريدك الإلكتروني (لأرد عليك)">
         <textarea id="contact-msg" class="input-field" rows="5" placeholder="اكتب رسالتك هنا..."></textarea>
-        <button class="btn-primary" onclick="App.sendEmail()">إرسال الرسالة 🚀</button>
+        <button class="btn-primary" onclick="App.sendEmail()">إرسال</button>
+    </div>
+
+    <div id="modal-replies" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h3>الردود الواردة</h3>
+            <i class="fas fa-times" style="font-size:1.5rem;" onclick="App.toggleModal('modal-replies', false)"></i>
+        </div>
+        <div id="replies-list">
+            <p style="text-align:center; color:#777;">جاري التحقق...</p>
+        </div>
     </div>
 
     <div class="nav-bar">
@@ -215,6 +208,8 @@ const analytics = firebase.analytics();
 
 const DB = {
     data: { posts: [], likes: [], reports: [] },
+    bannedWords: [],
+
     async init() {
         const local = localStorage.getItem('qoutok_data');
         if(local) {
@@ -222,9 +217,19 @@ const DB = {
             this.data.likes = p.likes || [];
             this.data.reports = p.reports || [];
         }
+        this.fetchBannedWords();
         await this.fetchPosts();
-        this.listenForAnnouncements(); // بدء الاستماع لإشعارات الأدمن
+        this.listenForAnnouncements();
     },
+    
+    // جلب الكلمات المحظورة من السيرفر
+    fetchBannedWords() {
+        db.ref('settings/bannedWords').on('value', snap => {
+            const val = snap.val();
+            if(val) DB.bannedWords = val.split(',').map(w => w.trim());
+        });
+    },
+
     async fetchPosts() {
         db.ref('posts').limitToLast(100).on('value', (snapshot) => {
             const val = snapshot.val();
@@ -235,23 +240,16 @@ const DB = {
         });
     },
     
-    // ✨ جديد: الاستماع لإشعارات الأدمن ✨
     listenForAnnouncements() {
         db.ref('announcements').limitToLast(1).on('child_added', (snapshot) => {
             const msg = snapshot.val();
-            // التأكد أن الإشعار جديد (بناءً على الوقت) - اختياري بسيط هنا
-            if(msg && (Date.now() - msg.date) < 86400000) { // إذا كان الإشعار في آخر 24 ساعة
-                 App.showAdminNotification(msg.title, msg.body);
-            }
+            if(msg && (Date.now() - msg.date) < 86400000) App.showAdminNotification(msg.title, msg.body);
         });
     },
 
     saveLocal() { localStorage.setItem('qoutok_data', JSON.stringify({ likes: this.data.likes, reports: this.data.reports })); },
     async addPost(post) { try { await db.ref('posts').push(post); analytics.logEvent('publish', { cat: post.cat }); return true; } catch(e) { return false; } },
-    async interact(id, type, val) {
-        const ref = db.ref(`posts/${id}/${type}Count`);
-        ref.transaction((current) => { const n = (current || 0) + val; return n < 0 ? 0 : n; });
-    },
+    async interact(id, type, val) { const ref = db.ref(`posts/${id}/${type}Count`); ref.transaction((current) => { const n = (current || 0) + val; return n < 0 ? 0 : n; }); },
     clear() { localStorage.removeItem('qoutok_data'); location.reload(); }
 };
 
@@ -267,122 +265,80 @@ const App = {
         App.autoDetectCountry();
         const savedPhone = localStorage.getItem('user_phone');
         if(savedPhone) document.getElementById('user-phone').value = savedPhone;
-        
-        // تحميل الإيميل المحفوظ
         const savedEmail = localStorage.getItem('user_email');
         if(savedEmail) document.getElementById('contact-email').value = savedEmail;
     },
-    
+
+    // 🚫 فحص الكلمات البذيئة 🚫
+    checkContent(text) {
+        if(!DB.bannedWords.length) return true;
+        for(let word of DB.bannedWords) {
+            if(word && text.includes(word)) return false;
+        }
+        return true;
+    },
+
+    // 📨 نظام الردود 📨
+    openReplies() {
+        const email = localStorage.getItem('user_email');
+        if(!email) return alert("يجب عليك إرسال رسالة أولاً وتحديد بريدك لتستقبل الردود.");
+        
+        const cleanEmail = email.replace(/\./g, '_');
+        const list = document.getElementById('replies-list');
+        list.innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
+        App.toggleModal('modal-replies', true);
+
+        db.ref('replies/' + cleanEmail).once('value', snap => {
+            list.innerHTML = '';
+            if(!snap.exists()) { list.innerHTML = '<p style="text-align:center;">لا توجد ردود جديدة.</p>'; return; }
+            
+            snap.forEach(child => {
+                const r = child.val();
+                list.innerHTML += `
+                    <div class="reply-box">
+                        <span class="reply-date">${new Date(r.date).toLocaleDateString()} - من المطور</span>
+                        <p>${r.reply}</p>
+                    </div>
+                `;
+            });
+        });
+    },
+
     showAdminNotification(title, body) {
         document.getElementById('notify-title').innerText = title;
         document.getElementById('notify-body').innerText = body;
         document.getElementById('admin-popup').classList.add('show');
     },
 
-    autoDetectCountry() {
-        fetch('https://ipapi.co/json/')
-            .then(res => res.json())
-            .then(data => { if(data.country_calling_code) document.getElementById('user-country-code').value = data.country_calling_code; })
-            .catch(() => { document.getElementById('user-country-code').value = "+962"; });
-    },
-
-    saveUserPhone() {
-        const num = document.getElementById('user-phone').value;
-        if(num) { localStorage.setItem('user_phone', num); App.showToast("تم حفظ رقمك ✅"); }
-    },
-
     async sendEmail() {
         const email = document.getElementById('contact-email').value;
         const msg = document.getElementById('contact-msg').value;
         if(!email || !msg) return App.showToast("الرجاء تعبئة الحقول");
-        
-        // حفظ الإيميل للمرة القادمة
-        localStorage.setItem('user_email', email);
+        localStorage.setItem('user_email', email); // حفظ الإيميل للردود
 
-        App.showToast("جاري إرسال الرسالة... ⏳");
+        App.showToast("جاري الإرسال... ⏳");
         try {
-            await fetch("https://formsubmit.co/ajax/ahmadakf78@gmail.com", {
-                method: "POST",
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ email: email, message: msg, _subject: "رسالة Qoutok" })
-            });
+            // حفظ في Firebase للأدمن
+            await db.ref('messages').push({ email: email, message: msg, date: Date.now() });
             App.showToast("تم الإرسال بنجاح! ✅");
             document.getElementById('contact-msg').value = '';
             App.toggleModal('modal-contact', false);
-        } catch (error) { App.showToast("حدث خطأ في الإرسال ❌"); }
+        } catch (error) { App.showToast("حدث خطأ ❌"); }
     },
 
-    nav(view, el) {
-        const currentView = document.querySelector('.app-view.active').id;
-        if(view === 'home' && currentView === 'view-home') { App.refreshHome(); return; }
-        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-'+view).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(el) el.classList.add('active');
-        if(view === 'explore') App.renderExplore();
-        if(view === 'library') App.renderLikes();
-    },
-
-    refreshHome() {
-        const container = document.getElementById('feed-container');
-        container.scrollTo({ top: 0, behavior: 'smooth' });
-        App.showToast("جاري التحديث... 🔄");
-        setTimeout(() => { App.renderFeed(); }, 500); 
-    },
-
-    renderFeed() {
-        const c = document.getElementById('feed-container');
-        c.innerHTML = '';
-        let posts = DB.data.posts.filter(p => !DB.data.reports.includes(p.id));
-        if(this.feedMode === 'qotd') { c.innerHTML = document.getElementById('qotd-area').innerHTML; return; }
-        posts.forEach(p => {
-            const isLiked = DB.data.likes.includes(p.id) ? 'liked' : '';
-            const likes = p.likesCount || 0;
-            const shares = p.sharesCount || 0;
-            const time = App.timeAgo(p.date);
-            const html = `
-                <div class="quote-slide" id="post-${p.id}">
-                    <div class="quote-body">
-                        <div style="color:var(--primary); margin-bottom:10px; font-size:0.9rem;">#${p.cat}</div>
-                        <div class="quote-text">"${p.text}"</div>
-                        <div style="color:var(--text-muted); font-size:0.9rem;">
-                            <span>— ${p.author}</span> <br> <small style="opacity:0.7">${time}</small>
-                        </div>
-                    </div>
-                    <div class="actions-bar">
-                        <div class="action-btn ${isLiked}" onclick="App.like('${p.id}', this)"><i class="fas fa-heart"></i></div>
-                        <span class="count-label">${likes}</span>
-                        <div class="action-btn" onclick="App.copyText('${p.text}')"><i class="fas fa-copy"></i></div>
-                        <div class="action-btn" onclick="App.share('${p.id}')"><i class="fas fa-share-alt"></i></div>
-                        <span class="count-label">${shares}</span>
-                        <div class="action-btn" style="border-color:#ef4444; color:#ef4444;" onclick="App.report('${p.id}')"><i class="fas fa-flag"></i></div>
-                    </div>
-                </div>`;
-            c.innerHTML += html;
-        });
-    },
-
-    renderExplore() {
-        const c = document.getElementById('search-results');
-        c.innerHTML = '';
-        let posts = [...DB.data.posts].sort((a, b) => ((a.likesCount||0)+(a.sharesCount||0)) - ((b.likesCount||0)+(b.sharesCount||0))).reverse();
-        if(this.activeMood !== 'all') posts = posts.filter(p => p.cat.includes(this.activeMood) || p.text.includes(this.activeMood));
-        posts.forEach(p => {
-            c.innerHTML += `
-                <div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);">
-                    <div style="font-weight:bold; margin-bottom:5px;">${p.text}</div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
-                        <span>#${p.cat}</span> <span>🔥 ${(p.likesCount||0) + (p.sharesCount||0)} تفاعل</span>
-                    </div>
-                </div>`;
-        });
-    },
-
+    // النشر مع الفحص
     async publish() {
         const txt = document.getElementById('inp-text').value;
         const auth = document.getElementById('inp-author').value || "مجهول";
         const cat = document.getElementById('inp-cat').value || "عام";
         if(!txt) return;
+
+        // فحص الكلمات
+        if(!App.checkContent(txt) || !App.checkContent(auth) || !App.checkContent(cat)) {
+            alert("عذراً، يحتوي المنشور على كلمات غير مسموح بها.");
+            return;
+        }
+
         App.showToast("جاري النشر...");
         await DB.addPost({ text: txt, author: auth, cat: cat, date: Date.now(), likesCount: 0, sharesCount: 0 });
         document.getElementById('inp-text').value = '';
@@ -391,63 +347,19 @@ const App = {
         App.refreshHome();
     },
 
-    like(id, btn) {
-        let label = btn.nextElementSibling;
-        let currentCount = parseInt(label.innerText) || 0;
-        if(!DB.data.likes.includes(id)) {
-            DB.data.likes.push(id); btn.classList.add('liked');
-            label.innerText = currentCount + 1; DB.interact(id, 'likes', 1);
-        } else {
-            DB.data.likes = DB.data.likes.filter(i => i !== id); btn.classList.remove('liked');
-            label.innerText = Math.max(0, currentCount - 1); DB.interact(id, 'likes', -1);
-        }
-        DB.saveLocal();
-    },
-
-    share(id) {
-        DB.interact(id, 'shares', 1);
-        const p = DB.data.posts.find(x => x.id == id);
-        const area = document.getElementById('capture-area');
-        document.getElementById('cap-text').innerText = p.text;
-        document.getElementById('cap-author').innerText = p.author;
-        App.showToast("جاري إنشاء الصورة للمشاركة...");
-        html2canvas(area).then(c => {
-            const l = document.createElement('a'); l.download = `Qoutok-${id}.png`; l.href = c.toDataURL(); l.click();
-        });
-    },
-
-    report(id) {
-        if(confirm("هل تريد الإبلاغ عن هذا المنشور وإخفاءه؟")) {
-            DB.data.reports.push(id); DB.saveLocal(); document.getElementById('post-'+id).style.display = 'none'; App.showToast("تم الإبلاغ شكراً لك");
-        }
-    },
-
-    renderQOTD() {
-        if(DB.data.posts.length === 0) return;
-        const today = new Date().toDateString();
-        let hash = 0; for(let i=0; i<today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash);
-        const index = Math.abs(hash) % DB.data.posts.length; const q = DB.data.posts[index];
-        const html = `<div style="padding:20px; display:flex; justify-content:center; align-items:center; height:100%;"><div class="qotd-banner"><div class="qotd-label">اقتباس اليوم 🌟</div><h2 style="font-family:'Amiri'; margin:20px 0;">"${q.text}"</h2><p>${q.author}</p></div></div>`;
-        document.getElementById('qotd-area').innerHTML = html;
-    },
-
-    renderLikes() {
-        const c = document.getElementById('likes-feed');
-        c.innerHTML = '';
-        const liked = DB.data.posts.filter(p => DB.data.likes.includes(p.id));
-        if(liked.length === 0) c.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);">لم تعجب بأي شيء بعد</div>';
-        liked.forEach(p => {
-            c.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);"><div style="font-size:1.2rem; margin-bottom:5px;">"${p.text}"</div><small style="color:var(--text-muted);">${p.author}</small></div>`;
-        });
-    },
-
-    timeAgo(date) {
-        const seconds = Math.floor((new Date() - date) / 1000);
-        if(seconds < 60) return "الآن";
-        const m = Math.floor(seconds/60); if(m<60) return `منذ ${m} د`;
-        const h = Math.floor(m/60); if(h<24) return `منذ ${h} س`;
-        return Math.floor(h/24) + " يوم";
-    },
+    // (باقي الدوال كما هي بدون تغيير)
+    autoDetectCountry() { fetch('https://ipapi.co/json/').then(res => res.json()).then(data => { if(data.country_calling_code) document.getElementById('user-country-code').value = data.country_calling_code; }).catch(() => { document.getElementById('user-country-code').value = "+962"; }); },
+    saveUserPhone() { const num = document.getElementById('user-phone').value; if(num) { localStorage.setItem('user_phone', num); App.showToast("تم حفظ رقمك ✅"); } },
+    nav(view, el) { const currentView = document.querySelector('.app-view.active').id; if(view === 'home' && currentView === 'view-home') { App.refreshHome(); return; } document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById('view-'+view).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(el) el.classList.add('active'); if(view === 'explore') App.renderExplore(); if(view === 'library') App.renderLikes(); },
+    refreshHome() { const container = document.getElementById('feed-container'); container.scrollTo({ top: 0, behavior: 'smooth' }); App.showToast("جاري التحديث... 🔄"); setTimeout(() => { App.renderFeed(); }, 500); },
+    renderFeed() { const c = document.getElementById('feed-container'); c.innerHTML = ''; let posts = DB.data.posts.filter(p => !DB.data.reports.includes(p.id)); if(this.feedMode === 'qotd') { c.innerHTML = document.getElementById('qotd-area').innerHTML; return; } posts.forEach(p => { const isLiked = DB.data.likes.includes(p.id) ? 'liked' : ''; const likes = p.likesCount || 0; const shares = p.sharesCount || 0; const time = App.timeAgo(p.date); const html = `<div class="quote-slide" id="post-${p.id}"><div class="quote-body"><div style="color:var(--primary); margin-bottom:10px; font-size:0.9rem;">#${p.cat}</div><div class="quote-text">"${p.text}"</div><div style="color:var(--text-muted); font-size:0.9rem;"><span>— ${p.author}</span> <br> <small style="opacity:0.7">${time}</small></div></div><div class="actions-bar"><div class="action-btn ${isLiked}" onclick="App.like('${p.id}', this)"><i class="fas fa-heart"></i></div><span class="count-label">${likes}</span><div class="action-btn" onclick="App.copyText('${p.text}')"><i class="fas fa-copy"></i></div><div class="action-btn" onclick="App.share('${p.id}')"><i class="fas fa-share-alt"></i></div><span class="count-label">${shares}</span><div class="action-btn" style="border-color:#ef4444; color:#ef4444;" onclick="App.report('${p.id}')"><i class="fas fa-flag"></i></div></div></div>`; c.innerHTML += html; }); },
+    renderExplore() { const c = document.getElementById('search-results'); c.innerHTML = ''; let posts = [...DB.data.posts].sort((a, b) => ((a.likesCount||0)+(a.sharesCount||0)) - ((b.likesCount||0)+(b.sharesCount||0))).reverse(); if(this.activeMood !== 'all') posts = posts.filter(p => p.cat.includes(this.activeMood) || p.text.includes(this.activeMood)); posts.forEach(p => { c.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);"><div style="font-weight:bold; margin-bottom:5px;">${p.text}</div><div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>#${p.cat}</span> <span>🔥 ${(p.likesCount||0) + (p.sharesCount||0)} تفاعل</span></div></div>`; }); },
+    like(id, btn) { let label = btn.nextElementSibling; let currentCount = parseInt(label.innerText) || 0; if(!DB.data.likes.includes(id)) { DB.data.likes.push(id); btn.classList.add('liked'); label.innerText = currentCount + 1; DB.interact(id, 'likes', 1); } else { DB.data.likes = DB.data.likes.filter(i => i !== id); btn.classList.remove('liked'); label.innerText = Math.max(0, currentCount - 1); DB.interact(id, 'likes', -1); } DB.saveLocal(); },
+    share(id) { DB.interact(id, 'shares', 1); const p = DB.data.posts.find(x => x.id == id); const area = document.getElementById('capture-area'); document.getElementById('cap-text').innerText = p.text; document.getElementById('cap-author').innerText = p.author; App.showToast("جاري إنشاء الصورة للمشاركة..."); html2canvas(area).then(c => { const l = document.createElement('a'); l.download = `Qoutok-${id}.png`; l.href = c.toDataURL(); l.click(); }); },
+    report(id) { if(confirm("هل تريد الإبلاغ عن هذا المنشور وإخفاءه؟")) { DB.data.reports.push(id); DB.saveLocal(); document.getElementById('post-'+id).style.display = 'none'; App.showToast("تم الإبلاغ شكراً لك"); } },
+    renderQOTD() { if(DB.data.posts.length === 0) return; const today = new Date().toDateString(); let hash = 0; for(let i=0; i<today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash); const index = Math.abs(hash) % DB.data.posts.length; const q = DB.data.posts[index]; const html = `<div style="padding:20px; display:flex; justify-content:center; align-items:center; height:100%;"><div class="qotd-banner"><div class="qotd-label">اقتباس اليوم 🌟</div><h2 style="font-family:'Amiri'; margin:20px 0;">"${q.text}"</h2><p>${q.author}</p></div></div>`; document.getElementById('qotd-area').innerHTML = html; },
+    renderLikes() { const c = document.getElementById('likes-feed'); c.innerHTML = ''; const liked = DB.data.posts.filter(p => DB.data.likes.includes(p.id)); if(liked.length === 0) c.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);">لم تعجب بأي شيء بعد</div>'; liked.forEach(p => { c.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);"><div style="font-size:1.2rem; margin-bottom:5px;">"${p.text}"</div><small style="color:var(--text-muted);">${p.author}</small></div>`; }); },
+    timeAgo(date) { const seconds = Math.floor((new Date() - date) / 1000); if(seconds < 60) return "الآن"; const m = Math.floor(seconds/60); if(m<60) return `منذ ${m} د`; const h = Math.floor(m/60); if(h<24) return `منذ ${h} س`; return Math.floor(h/24) + " يوم"; },
     filterMood(mood, el) { this.activeMood = mood; document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); App.renderExplore(); },
     search(val) { const c = document.getElementById('search-results'); c.innerHTML = ''; const res = DB.data.posts.filter(p => p.text.includes(val) || p.cat.includes(val)); res.forEach(p => { c.innerHTML += `<div style="background:var(--card); padding:15px; margin-bottom:10px;">${p.text}</div>`; }); },
     copyText(txt) { navigator.clipboard.writeText(txt); App.showToast("تم النسخ"); },
